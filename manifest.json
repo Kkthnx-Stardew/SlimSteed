@@ -1,0 +1,10 @@
+{
+  "Name": "SlimSteed",
+  "Author": "Kkthnx",
+  "Version": "1.0.0",
+  "Description": "Makes the horse thinner so it can fit through single-tile gaps.",
+  "UniqueID": "Kkthnx.SlimSteed",
+  "EntryDll": "SlimSteed.dll",
+  "MinimumApiVersion": "4.0.0",
+  "UpdateKeys": []
+}
