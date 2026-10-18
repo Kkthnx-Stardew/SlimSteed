@@ -5,32 +5,38 @@ using StardewValley.Characters;
 
 namespace SlimSteed.Patches
 {
+    /// <summary>
+    /// Narrows the horse's collision box so it fits wherever the farmer fits.
+    /// Only the box width changes. X, Y and height stay vanilla, so mounting,
+    /// dismounting and drawing keep using their normal math.
+    /// </summary>
     [HarmonyPatch(typeof(Horse), nameof(Horse.GetBoundingBox))]
     internal static class HorsePatch
     {
-        // This variable is set by ModEntry when the game loads
-        public static int WidthSetting = 40;
+        public static int Width = 48;
+        public static bool ThinWhenNotRidden;
 
-        static void Postfix(Horse __instance, ref Rectangle __result)
+        /// <summary>While above zero, the box is left at its vanilla size. Used for the "in front of me" lookups.</summary>
+        internal static int VanillaDepth;
+
+        /// <summary>Whether this horse should currently use the slim box.</summary>
+        internal static bool IsSlim(Horse horse)
         {
-            if (__instance == null)
+            return horse.rider != null || ThinWhenNotRidden;
+        }
+
+        [HarmonyPostfix]
+        private static void Postfix(Horse __instance, ref Rectangle __result)
+        {
+            if (__result.IsEmpty || VanillaDepth > 0)
                 return;
 
-            // Use the width from config (clamped to prevent breaking things)
-            // Minimum 16px, Max 64px (Vanilla)
-            int width = System.Math.Clamp(WidthSetting, 16, 64);
+            if (!IsSlim(__instance))
+                return;
 
-            // Center the new hitbox
-            // Formula: CenterOffset = (StandardTile / 2) - (NewWidth / 2)
-            // Note: Use 32f as the center point of a 64px tile
-            float centerOffset = 32f - (width / 2f);
-
-            __result = new Rectangle(
-                (int)(__instance.Position.X + centerOffset),
-                __result.Y,
-                width,
-                __result.Height
-            );
+            // Never widen. Vanilla already shrinks the box further while squeezing through a gate.
+            if (__result.Width > Width)
+                __result.Width = Width;
         }
     }
 }
