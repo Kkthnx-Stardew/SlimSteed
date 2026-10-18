@@ -1,10 +1,10 @@
 {
   "Name": "SlimSteed",
   "Author": "Kkthnx",
-  "Version": "1.1.0",
+  "Version": "1.1.1",
   "Description": "Slims the horse's collision box so it fits through single-tile gaps while riding.",
   "UniqueID": "Kkthnx.SlimSteed",
   "EntryDll": "SlimSteed.dll",
   "MinimumApiVersion": "4.0.0",
-  "UpdateKeys": []
+  "UpdateKeys": [ "Nexus:54068" ]
 }
