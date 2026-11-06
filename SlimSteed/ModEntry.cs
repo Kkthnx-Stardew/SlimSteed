@@ -25,7 +25,17 @@ namespace SlimSteed
 
         public override void Entry(IModHelper helper)
         {
-            var config = helper.ReadConfig<ModConfig>();
+            ModConfig config;
+            try
+            {
+                config = helper.ReadConfig<ModConfig>() ?? new ModConfig();
+            }
+            catch (Exception ex)
+            {
+                // a config.json that cannot be read must not stop the mod, and the file is left alone
+                this.Monitor.Log($"Could not read config.json, so the default settings are used. Fix it or delete it. ({ex.Message})", LogLevel.Warn);
+                config = new ModConfig();
+            }
 
             if (!config.Enabled)
             {
@@ -33,9 +43,16 @@ namespace SlimSteed
                 return;
             }
 
+            // SMAPI registers mods one at a time as they load, so inside Entry only the mods that loaded before this one can be seen.
+            // GameLaunched comes after every mod has loaded, which makes the check the same whatever the folder names sort to.
+            helper.Events.GameLoop.GameLaunched += (_, _) => this.Apply(helper, config);
+        }
+
+        private void Apply(IModHelper helper, ModConfig config)
+        {
             if (config.YieldToOtherMods)
             {
-                string[] found = OverlappingMods.Where(helper.ModRegistry.IsLoaded).ToArray();
+                string[] found = OverlappingMods.Where(this.Helper.ModRegistry.IsLoaded).ToArray();
                 if (found.Length > 0)
                 {
                     this.Monitor.Log(

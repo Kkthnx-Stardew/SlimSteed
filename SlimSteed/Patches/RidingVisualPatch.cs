@@ -19,7 +19,13 @@ namespace SlimSteed.Patches
 
         private const float StepPerTick = 1.5f;
 
-        private sealed class Eased { public float Value; }
+        private sealed class Eased
+        {
+            public float Value;
+
+            /// <summary>The game tick this horse was last advanced on, so a horse that is both a rider's mount and in the location's list moves once a tick.</summary>
+            public int LastTick = -1;
+        }
 
         private static readonly ConditionalWeakTable<Horse, Eased> State = new();
 
@@ -39,6 +45,10 @@ namespace SlimSteed.Patches
             }
 
             var eased = State.GetOrCreateValue(horse);
+            if (eased.LastTick == Game1.ticks)
+                return;
+            eased.LastTick = Game1.ticks;
+
             if (eased.Value < target) eased.Value = System.Math.Min(target, eased.Value + StepPerTick);
             else if (eased.Value > target) eased.Value = System.Math.Max(target, eased.Value - StepPerTick);
         }
